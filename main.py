@@ -44,7 +44,7 @@ class Trainer:
 
             loss = self.loss(outputs, y)
 
-            running_loss += loss.item()
+            running_loss += loss.item() * X.size(0)
             running_acc += self.calculate_accuracy(outputs, y)
 
             self.optimizer.zero_grad()
@@ -70,7 +70,7 @@ class Trainer:
                 outputs = self.model(X)
 
                 loss = self.loss(outputs, y)
-                running_loss += loss.item()
+                running_loss += loss.item() * X.size(0)
 
                 running_acc += self.calculate_accuracy(outputs, y)
 
