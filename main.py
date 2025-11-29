@@ -37,7 +37,8 @@ class Trainer:
         running_loss, running_acc = 0, 0
 
         for X, y in enumerate(self.train_loader):
-            X, y = X.to(self.device), y.to(self.device)
+            X = X.to(self.device), 
+            y = y.to(self.device)
 
             outputs = self.model(X)
 
