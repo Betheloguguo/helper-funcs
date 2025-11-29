@@ -85,10 +85,10 @@ class Trainer:
             train_loss, train_acc = self.training_steps()
             test_loss, test_acc = self.training_steps()
 
-        self.results['train_loss'].append(train_loss.cpu())
-        self.results['train_acc'].append(train_acc.cpu())
-        self.results['test_loss'].append(test_loss.cpu())
-        self.results['train_acc'].append(test_acc.cpu())
+            self.results['train_loss'].append(train_loss.cpu())
+            self.results['train_acc'].append(train_acc.cpu())
+            self.results['test_loss'].append(test_loss.cpu())
+            self.results['train_acc'].append(test_acc.cpu())
 
         print(f'Epoch: {epoch}')
         print(f'Train Loss: {train_loss:.4f} | Train Accuracy: {train_acc:.4f} | Test Loss: {test_loss:.4f} | Test Accuracy: {test_acc:.4f}')
