@@ -63,7 +63,8 @@ class Trainer:
         running_loss, running_acc = 0, 0
 
         with torch.inference_mode():
-            for X, y in enumerate(self.test_loader):
+            for batch_idx, (X, y) in enumerate(self.test_loader):
+
                 X, y = X.to(self.device), y.to(self.device)
             
                 outputs = self.model(X)
