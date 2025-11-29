@@ -88,7 +88,7 @@ class Trainer:
             self.results['train_loss'].append(np.array(train_loss))
             self.results['train_acc'].append(np.array(train_acc))
             self.results['test_loss'].append(np.array(test_loss))
-            self.results['train_acc'].append(np.array(test_acc))
+            self.results['test_acc'].append(np.array(test_acc))
 
         print(f'Epoch: {epoch}')
         print(f'Train Loss: {train_loss:.4f} | Train Accuracy: {train_acc:.4f} | Test Loss: {test_loss:.4f} | Test Accuracy: {test_acc:.4f}')
