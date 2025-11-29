@@ -36,8 +36,8 @@ class Trainer:
 
         running_loss, running_acc = 0, 0
 
-        for X, y in enumerate(self.train_loader):
-            X = X.to(self.device), 
+        for batch_idx,  (X, y) in enumerate(self.train_loader):
+            X = X.to(self.device)
             y = y.to(self.device)
 
             outputs = self.model(X)
