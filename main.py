@@ -2,6 +2,10 @@ import torch
 import torch.nn as nn
 import torchvision
 import numpy as np
+import os
+from pathlib import Path
+import zipfile
+import requests
 from torch.utils.data import DataLoader, Dataset
 import matplotlib.pyplot as plt
 
@@ -23,18 +27,17 @@ class Trainer:
                 'test_acc': []
                 }
         
-    def calculate_accuracy(self, output, target):
+    def correct_preds(self, output, target):
         _, preds = torch.max(output, 1)
         correct = (preds == target).sum().item()
-        accuracy = correct / target.size(0)
-        return accuracy
+        return correct
 
 
     def training_steps(self):
         
         self.model.train()
 
-        running_loss, running_acc = 0, 0
+        running_loss, correct, total_samples = 0, 0, 0
 
         for batch_idx,  (X, y) in enumerate(self.train_loader):
             X = X.to(self.device)
@@ -45,14 +48,15 @@ class Trainer:
             loss = self.loss(outputs, y)
 
             running_loss += loss.item() * X.size(0)
-            running_acc += self.calculate_accuracy(outputs, y)
+            correct += self.correct_preds(outputs, y)
+            total_samples += y.size()
 
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
 
-        train_loss = running_loss / len(self.train_loader)
-        train_acc = running_acc / len(self.train_loader)
+        train_loss = running_loss / len(self.train_loader.dataset)
+        train_acc = correct / total_samples
 
         return train_loss, train_acc
     
@@ -60,7 +64,7 @@ class Trainer:
 
         self.model.eval()
 
-        running_loss, running_acc = 0, 0
+        running_loss, correct, total_samples = 0, 0, 0
 
         with torch.inference_mode():
             for batch_idx, (X, y) in enumerate(self.test_loader):
@@ -72,10 +76,10 @@ class Trainer:
                 loss = self.loss(outputs, y)
                 running_loss += loss.item() * X.size(0)
 
-                running_acc += self.calculate_accuracy(outputs, y)
+                correct += self.correct_preds(outputs, y)
 
-            test_loss = running_loss/len(self.test_loader)
-            test_acc = running_acc/len(self.test_loader)
+            test_loss = running_loss/len(self.test_loader.dataset)
+            test_acc = correct / total_samples
 
         return test_loss, test_acc
     
@@ -83,7 +87,7 @@ class Trainer:
     def epoch_training(self, epochs: int = 5):
         for epoch in range(epochs):
             train_loss, train_acc = self.training_steps()
-            test_loss, test_acc = self.training_steps()
+            test_loss, test_acc = self.testing_steps()
 
             self.results['train_loss'].append(np.array(train_loss))
             self.results['train_acc'].append(np.array(train_acc))
@@ -132,3 +136,50 @@ def plot_loss_curves(results):
     plt.xlabel("Epochs")
     plt.legend()
 
+
+
+def download_data(source: str, 
+                  destination: str,
+                  remove_source: bool = True) -> Path:
+    """Downloads a zipped dataset from source and unzips to destination.
+
+    Args:
+        source (str): A link to a zipped file containing data.
+        destination (str): A target directory to unzip data to.
+        remove_source (bool): Whether to remove the source after downloading and extracting.
+    
+    Returns:
+        pathlib.Path to downloaded data.
+    
+    Example usage:
+        download_data(source="https://github.com/mrdbourke/pytorch-deep-learning/raw/main/data/pizza_steak_sushi.zip",
+                      destination="pizza_steak_sushi")
+    """
+    # Setup path to data folder
+    data_path = Path("data/")
+    image_path = data_path / destination
+
+    # If the image folder doesn't exist, download it and prepare it... 
+    if image_path.is_dir():
+        print(f"[INFO] {image_path} directory exists, skipping download.")
+    else:
+        print(f"[INFO] Did not find {image_path} directory, creating one...")
+        image_path.mkdir(parents=True, exist_ok=True)
+        
+        # Download pizza, steak, sushi data
+        target_file = Path(source).name
+        with open(data_path / target_file, "wb") as f:
+            request = requests.get(source)
+            print(f"[INFO] Downloading {target_file} from {source}...")
+            f.write(request.content)
+
+        # Unzip pizza, steak, sushi data
+        with zipfile.ZipFile(data_path / target_file, "r") as zip_ref:
+            print(f"[INFO] Unzipping {target_file} data...") 
+            zip_ref.extractall(image_path)
+
+        # Remove .zip file
+        if remove_source:
+            os.remove(data_path / target_file)
+    
+    return image_path
