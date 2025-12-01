@@ -49,7 +49,7 @@ class Trainer:
 
             running_loss += loss.item() * X.size(0)
             correct += self.correct_preds(outputs, y)
-            total_samples += len(y.size(0))
+            total_samples += int(y.size(0))
 
             self.optimizer.zero_grad()
             loss.backward()
