@@ -49,7 +49,7 @@ class Trainer:
 
             running_loss += loss.item() * X.size(0)
             correct += self.correct_preds(outputs, y)
-            total_samples += int(y.size(0))
+            total_samples += int(np.array(y.size(0)))
 
             self.optimizer.zero_grad()
             loss.backward()
@@ -77,7 +77,7 @@ class Trainer:
                 running_loss += loss.item() * X.size(0)
 
                 correct += self.correct_preds(outputs, y)
-                total_samples += int(y.size(0))
+                total_samples += int(np.array(y.size(0)))
 
             test_loss = running_loss/len(self.test_loader.dataset)
             test_acc = correct / total_samples
