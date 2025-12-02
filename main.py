@@ -10,12 +10,14 @@ from torch.utils.data import DataLoader, Dataset
 import matplotlib.pyplot as plt
 
 class Trainer:
-    def __init__(self, model, train_loader, test_loader, loss, optimizer, device = None):
+    def __init__(self, model, train_loader, test_loader, loss, optimizer, scheduler = None, device = None):
         self.model = model
         self.train_loader = train_loader
         self.test_loader = test_loader
         self.loss = loss
         self.optimizer = optimizer
+        self.scheduler = scheduler
+
 
         if device:
             self.device = device
@@ -37,7 +39,9 @@ class Trainer:
         
         self.model.train()
 
-        running_loss, correct, total_samples = 0, 0, 0
+        running_loss = 0 
+        correct = 0
+        total_samples = 0
 
         for batch_idx,  (X, y) in enumerate(self.train_loader):
             X = X.to(self.device)
@@ -97,6 +101,14 @@ class Trainer:
 
         print(f'Epoch: {epoch}')
         print(f'Train Loss: {train_loss:.4f} | Train Accuracy: {train_acc:.4f} | Test Loss: {test_loss:.4f} | Test Accuracy: {test_acc:.4f}')
+
+        # ---- Step scheduler ----
+        if self.scheduler:
+            if isinstance(self.scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
+                self.scheduler.step(test_loss)
+            else:
+                self.scheduler.step()
+
 
         return self.results
 
